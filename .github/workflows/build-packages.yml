@@ -77,6 +77,14 @@ jobs:
         if: always()
         run: cat output/arm/build.log || cat output/aarch64/build.log || echo "no log"
 
+      - name: Debug debs location
+        if: always()
+        run: |
+          echo "=== output structure ==="
+          find output -type f | head -50
+          echo "=== all debs ==="
+          find . -name "*.deb" -not -path "./.git/*" | head -20
+
       - name: Show output structure
         run: |
           echo "=== output/ ==="
