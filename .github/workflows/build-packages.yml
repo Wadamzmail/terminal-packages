@@ -75,6 +75,9 @@ jobs:
           export ANDROID_NDK_HOME=/github/home/lib/android-ndk-r29
           export NDK=/github/home/lib/android-ndk-r29
           bash -x build.sh -a "${{ matrix.arch }}"
+          
+      - name: Show output structure
+        run: find output -type f | head -50 
 
       - name: Generate APT repository
         run: bash ./generate-apt-repo.sh
