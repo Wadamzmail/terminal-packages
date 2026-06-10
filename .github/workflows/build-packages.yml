@@ -21,13 +21,16 @@ jobs:
       image: ghcr.io/termux/package-builder:latest
       options: --privileged --device /dev/fuse
 
+    env:
+      GPG_KEY_ID: B740141714937F5987E2F56AD90D5C7DEC721765
+
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Cache built packages
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v4
         with:
           path: |
             /data/data/.built-packages
@@ -35,30 +38,10 @@ jobs:
           key: termux-build-${{ matrix.arch }}-${{ hashFiles('packages/**') }}
           restore-keys: |
             termux-build-${{ matrix.arch }}-
-          save-always: true 
+          save-always: true
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Cache NDK
-        uses: actions/cache@v4
-        with:
-          path: /github/home/lib/android-ndk-r29
-          key: android-ndk-r29
-
-      - name: Setup Android NDK
-        run: |
-          if [ ! -d /github/home/lib/android-ndk-r29 ]; then
-            NDK_VERSION="r29"
-            NDK_ZIP="android-ndk-${NDK_VERSION}-linux.zip"
-            curl -L "https://dl.google.com/android/repository/${NDK_ZIP}" -o /tmp/ndk.zip
-            unzip -q /tmp/ndk.zip -d /github/home/lib/
-          else
-            echo "NDK already cached, skipping download"
-          fi
-          
       - name: Cache Gradle
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v4
         with:
           path: |
             /github/home/.gradle/caches
@@ -66,70 +49,39 @@ jobs:
           key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             gradle-
-          save-always: true 
+          save-always: true
 
-      - name: Build
+      - name: Cache NDK
+        uses: actions/cache@v4
+        with:
+          path: /github/home/lib/android-ndk-r29
+          key: android-ndk-r29
+          save-always: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Android NDK
+        run: |
+          if [ ! -d /github/home/lib/android-ndk-r29 ]; then
+            curl -L "https://dl.google.com/android/repository/android-ndk-r29-linux.zip" -o /tmp/ndk.zip
+            unzip -q /tmp/ndk.zip -d /github/home/lib/
+          else
+            echo "NDK cached"
+          fi
+
+      - name: Build packages
         run: |
           export ANDROID_NDK_HOME=/github/home/lib/android-ndk-r29
           export NDK=/github/home/lib/android-ndk-r29
-          mkdir -p output
           bash -x build.sh -a "${{ matrix.arch }}"
 
-      - name: Rename debs (remove epoch colon)
-        run: |
-          find output -name "*.deb" | while read f; do
-            newname=$(echo "$f" | sed 's/:[0-9]*:/./g')
-            if [ "$f" != "$newname" ]; then
-              mv "$f" "$newname"
-            fi
-          done
-
-      - uses: actions/upload-artifact@v4
-        continue-on-error: true 
-        with:
-          name: packages-${{ matrix.arch }}
-          path: output
-          retention-days: 1
-
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-
-    env:
-      GPG_KEY_ID: B740141714937F5987E2F56AD90D5C7DEC721765
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Install tools
-        run: |
-          sudo apt update
-          sudo apt install -y git gnupg curl dpkg
+      - name: Generate APT repository
+        run: bash ./generate-apt-repo.sh
 
       - name: Import GPG key
         run: |
           echo "${{ secrets.PACKAGES_GPG_KEY }}" | base64 -d | gpg --batch --import
-
-      - name: Collect debs
-        run: |
-          mkdir -p repo-debs
-          find artifacts -name "*.deb" -exec cp {} repo-debs/ \;
-
-      - name: Download termux-apt-repo
-        run: |
-          curl -L \
-            -o termux-apt-repo \
-            https://raw.githubusercontent.com/termux/termux-apt-repo/master/termux-apt-repo
-          chmod +x termux-apt-repo
-
-      - name: Create repository
-        run: |
-          mkdir -p repo
-          bash ./termux-apt-repo repo-debs repo stable main
 
       - name: Sign repository
         run: |
@@ -141,14 +93,27 @@ jobs:
             --digest-algo SHA256 \
             --clearsign \
             -u "${GPG_KEY_ID}" \
-            -o repo/dists/stable/InRelease \
-            repo/dists/stable/Release
+            -o output/repo/dists/stable/InRelease \
+            output/repo/dists/stable/Release
+
+      - name: Rename debs (remove epoch colon)
+        run: |
+          find output -name "*.deb" | while read f; do
+            newname=$(echo "$f" | tr ':' '_')
+            [ "$f" != "$newname" ] && mv "$f" "$newname"
+          done
+
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: packages-${{ matrix.arch }}
+          path: output
+          retention-days: 1
 
       - name: Deploy to pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: pages
-          publish_dir: repo
-          keep_files: false 
-          force_orphan: true 
+          publish_dir: output/repo
+          keep_files: true
