@@ -2,7 +2,15 @@ name: Build Packages
 
 on:
   workflow_dispatch:
-  push:
+   inputs:
+      arch:
+        description: "Target architecture"
+        required: true
+        default: "aarch64"
+        type: choice
+        options:
+          - aarch64
+          - arm          
 
 permissions:
   contents: write
@@ -10,12 +18,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        arch:
-          - aarch64
-          # - arm
 
     container:
       image: ghcr.io/termux/package-builder:latest
@@ -32,10 +34,10 @@ jobs:
           path: |
             /data/data/.built-packages
             /github/home/.termux-build    
-            output/${{ matrix.arch }}
-          key: termux-build-${{ matrix.arch }}-${{ hashFiles('packages/**') }}
+            output/${{ inputs.arch }}
+          key: termux-build-${{ inputs.arch }}-${{ hashFiles('packages/**') }}
           restore-keys: |
-            termux-build-${{ matrix.arch }}-
+            termux-build-${{ inputs.arch }}-
           save-always: true
 
       - name: Cache Gradle
@@ -72,7 +74,7 @@ jobs:
         run: |
           export ANDROID_NDK_HOME=/github/home/lib/android-ndk-r29
           export NDK=/github/home/lib/android-ndk-r29
-          bash -x build.sh -a "${{ matrix.arch }}"
+          bash -x build.sh -a "${{ inputs.arch }}"
 
       - name: Show build log
         if: always()
@@ -97,20 +99,20 @@ jobs:
           
       - name: Package debs
         run: |
-          cd output/${{ matrix.arch }}
+          cd output/${{ inputs.arch }}
           # rename colons first
           for f in *.deb; do
             newname=$(echo "$f" | tr ':' 'COLON')
             [ "$f" != "$newname" ] && mv "$f" "$newname"
           done
-          zip -0 ../packages-${{ matrix.arch }}.zip *.deb
+          zip -0 ../packages-${{ inputs.arch }}.zip *.deb
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: packages-${{ github.run_id }}
           name: Packages Build ${{ github.run_id }}
-          files: output/packages-${{ matrix.arch }}.zip
+          files: output/packages-${{ inputs.arch }}.zip
           fail_on_unmatched_files: false
 
   publish:
@@ -127,8 +129,8 @@ jobs:
         run: |
           mkdir -p output/aarch64 output/arm
           gh release download packages-${{ github.run_id }} \
-            --pattern "packages-aarch64.zip" --dir output/aarch64        
-          (cd output/aarch64 && unzip -o packages-aarch64.zip && rm packages-aarch64.zip)
+            --pattern "packages-${{ inputs.arch }}.zip" --dir output/${{ inputs.arch }}        
+          (cd output/${{ inputs.arch }} && unzip -o packages-${{ inputs.arch }}.zip && rm packages-${{ inputs.arch }}.zip)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
