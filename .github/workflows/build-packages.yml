@@ -15,7 +15,7 @@ jobs:
       matrix:
         arch:
           - aarch64
-          - arm
+          # - arm
 
     container:
       image: ghcr.io/termux/package-builder:latest
