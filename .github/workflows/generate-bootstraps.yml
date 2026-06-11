@@ -25,16 +25,20 @@ jobs:
   bootstrap:
     runs-on: ubuntu-latest
 
+    container:
+      image: ghcr.io/termux/package-builder:latest
+      options: --privileged --device /dev/fuse       
+
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Install tools
-        run: |
-          apt update
-          apt install -y bash git curl gnupg zip
+        run: |        
+          sudo apt-get install -y bash git curl gnupg zip
 
+                
       - name: Build Bootstrap
         run: |
           export COTG_REPO="https://wadamzmail.github.io/terminal-packages"
