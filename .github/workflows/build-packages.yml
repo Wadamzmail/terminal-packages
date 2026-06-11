@@ -107,11 +107,15 @@ jobs:
           done
           zip -0 ../packages-${{ inputs.arch }}.zip *.deb
 
+      - name: Delete existing release
+        run: |
+         gh release delete packages-${{ inputs.arch }} --yes || true
+
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: packages-${{ github.run_id }}
-          name: Packages Build ${{ github.run_id }}
+          tag_name: packages-${{ inputs.arch }}
+          name: Packages Build ${{ inputs.arch }}
           files: output/packages-${{ inputs.arch }}.zip
           fail_on_unmatched_files: false
 
@@ -128,7 +132,7 @@ jobs:
       - name: Download from Release
         run: |
           mkdir -p output/aarch64 output/arm
-          gh release download packages-${{ github.run_id }} \
+          gh release download packages-${{ inputs.arch }} \
             --pattern "packages-${{ inputs.arch }}.zip" --dir output/${{ inputs.arch }}        
           (cd output/${{ inputs.arch }} && unzip -o packages-${{ inputs.arch }}.zip && rm packages-${{ inputs.arch }}.zip)
         env:
