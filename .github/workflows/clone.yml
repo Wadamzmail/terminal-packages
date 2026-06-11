@@ -1,0 +1,25 @@
+name: Clone from Source Repository
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  clone:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Wadamzmail/terminal-packages
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Force push to current repository
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
+          git push origin --force --all
+          git push origin --force --tags
+
