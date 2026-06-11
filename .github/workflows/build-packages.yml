@@ -113,6 +113,9 @@ jobs:
          -H "Authorization: Bearer $GITHUB_TOKEN" \
          -H "Accept: application/vnd.github+json" \
          https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs/tags/packages-${{ inputs.arch }} || true
+        env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
