@@ -72,9 +72,9 @@ jobs:
           mkdir -p output
 
           if [ "${{ inputs.release }}" = "true" ]; then
-            bash ./generate-bootstrap-archive.sh -g -r "$COTG_REPO" "${{ inputs.arch }}"
+            bash ./generate-bootstrap-archive.sh -a "${{ inputs.arch }}" -g -r "$COTG_REPO" "${{ inputs.arch }}"
           else
-            bash ./generate-bootstrap-archive.sh -r "$COTG_REPO" "${{ inputs.arch }}"
+            bash ./generate-bootstrap-archive.sh -a "${{ inputs.arch }}" -r "$COTG_REPO" "${{ inputs.arch }}"
           fi
 
       - name: Show output
