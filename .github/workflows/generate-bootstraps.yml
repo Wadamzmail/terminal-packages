@@ -95,7 +95,7 @@ jobs:
       - name: Upload Bootstrap Release
         uses: softprops/action-gh-release@v2
         with:
-         tag_name: bootstrap-${{ github.run_id }}
+         tag_name: bootstrap-${{ steps.date.outputs.date }}
          name: Bootstrap ${{ steps.date.outputs.date }}
          body_path: output/SHA256SUMS.txt
          files: |
