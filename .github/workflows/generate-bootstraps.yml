@@ -34,6 +34,15 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Setup Android NDK
+        run: |
+          if [ ! -d /github/home/lib/android-ndk-r29 ]; then
+            curl -L "https://dl.google.com/android/repository/android-ndk-r29-linux.zip" -o /tmp/ndk.zip
+            unzip -q /tmp/ndk.zip -d /github/home/lib/
+          else
+            echo "NDK cached"
+          fi
+
       - name: Install tools
         run: |        
           sudo apt-get install -y bash git curl gnupg zip
