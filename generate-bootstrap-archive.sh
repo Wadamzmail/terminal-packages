@@ -104,20 +104,48 @@ usage() {
   echo "  -h        Show this help message and exit."
 }
 
-apply_patches() {
-  pushd "$TERMUX_PACKAGES_DIR" || scribe_error_exit "Unable to pushd"
+setup_termux_packages() {
+  pushd "$TERMUX_PACKAGES_DIR" || scribe_error_exit "Unable to pushd into termux-packages"
 
+  # Change package name
+  echo "Updating package name.."
+  grep -rniF . -e "${TERMUX_PACKAGE_NAME}" -l --exclude-dir=".git" |
+    xargs -L1 sed -i "s/${TERMUX_PACKAGE_NAME//./\\.}/${COTG_PACKAGE_NAME}/g" ||
+    scribe_error_exit "Unable to update package name"
+
+  # Removes existing keyrings
+  echo "Removing existing GPG keys..."
+  rm -rvf packages/termux-keyring/*.gpg
+
+  # Add our own keyring
+  echo "Adding our keyring..."
+  cp "${COTG_GPG_KEY}" "./packages/termux-keyring/$(basename "$COTG_GPG_KEY")"
+
+  # Create termux-keyring.patch
+  termux_keyring_patch="$script_dir/patches/termux-keyring.patch"
+  sed "s|@COTG_GPG_KEY@|$(basename "$COTG_GPG_KEY")|g" "${termux_keyring_patch}.in" >"$termux_keyring_patch"
+
+  # Create termux-tools-update-package-name.patch
+  termux_tools_update_package_name_patch="$script_dir/patches/termux-tools-update-package-name.patch"
+  sed "s|@TERMUX_PACKAGE_NAME@|$COTG_PACKAGE_NAME|g" "${termux_tools_update_package_name_patch}.in" >"${termux_tools_update_package_name_patch}"
+
+  # Apply patches
   for patch in "${PATCHES[@]}"; do
-    scribe_info "Applying patch: $patch"
-
-    if patch -p1 --no-backup-if-mismatch < "$script_dir/patches/$patch"; then
-      scribe_ok "Applied $patch"
-    else
-      scribe_error_exit "Failed patch: $patch"
+    scribe_info "Applying patch: ${patch}"
+    if patch -p1 --no-backup-if-mismatch <"$script_dir/patches/$patch" ||
+      scribe_error_exit "Failed to apply '$patch'"; then
+      scribe_ok "Applied '$patch'"
     fi
   done
 
-  popd || scribe_error_exit "Unable to popd"
+  # Update the packages repository
+  grep -rnI . -e "https://packages-cf.termux.dev/apt/termux-main" -l |
+    xargs -L1 sed -i "s|https://packages-cf.termux.dev/apt/termux-main|${COTG_REPO}|g"
+
+  # Marked patched
+  touch .scribe-patched
+
+  popd || scribe_error_exit "Unable to popd from termux-packages"
 }
 
 build_boostrap() {
@@ -219,7 +247,7 @@ echo "  Variant        : ${COTG_VARIANT}"
 echo "  Repository     : ${COTG_REPO}"
 echo "  Extra packages : ${COTG_EXTRA_PACKAGES[@]}"
 
-apply_patches
+setup_termux_packages
 
 for arch in aarch64 arm; do
   build_boostrap "$COTG_VARIANT" "$arch" "$COTG_REPO" "${COTG_EXTRA_PACKAGES[@]}" ||
