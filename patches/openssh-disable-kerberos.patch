@@ -1,5 +1,34 @@
+From 6480408dbaf5b4159e35af846af20d4f9a2a9de2 Mon Sep 17 00:00:00 2001
+From: Wadamzmail <alksndrmetwakil@gmail.com>
+Date: Sat, 13 Jun 2026 16:24:33 +0200
+Subject: [PATCH] exclude krb5
+
+---
+ packages/openssh/build.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/openssh/build.sh b/packages/openssh/build.sh
+index 249aa3b..6172f22 100644
 --- a/packages/openssh/build.sh
 +++ b/packages/openssh/build.sh
-@@ -1,4 +1,4 @@
+@@ -6,7 +6,7 @@ TERMUX_PKG_VERSION="10.3p1"
+ TERMUX_PKG_REVISION=1
+ TERMUX_PKG_SRCURL=https://github.com/openssh/openssh-portable/archive/refs/tags/V_$(sed 's/\./_/g; s/p/_P/g' <<< $TERMUX_PKG_VERSION).tar.gz
+ TERMUX_PKG_SHA256=c1a4420b1a25ba7336f62afd42ed5974d93455a2ab8c769b5e8e0c8ff8eedadc
 -TERMUX_PKG_DEPENDS="krb5, ldns, libandroid-support, libedit, openssh-sftp-server, openssl, termux-auth, zlib"
 +TERMUX_PKG_DEPENDS="ldns, libandroid-support, libedit, openssh-sftp-server, openssl, termux-auth, zlib"
+ TERMUX_PKG_SUGGESTS="termux-services"
+ TERMUX_PKG_CONFLICTS="dropbear"
+ TERMUX_PKG_AUTO_UPDATE=true
+@@ -37,7 +37,7 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
+ --with-pid-dir=$TERMUX_PREFIX/var/run
+ --with-privsep-path=$TERMUX_PREFIX/var/empty
+ --with-xauth=$TERMUX_PREFIX/bin/xauth
+---with-kerberos5
++--without-kerberos5
+ --with-default-path=$TERMUX_PREFIX/bin
+ ac_cv_func_endgrent=yes
+ ac_cv_func_fmt_scaled=no
+-- 
+2.52.0
+
