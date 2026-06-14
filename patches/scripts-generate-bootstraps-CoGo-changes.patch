@@ -26,12 +26,10 @@ index 825f2a886e..0e4ca238a1 100755
 +		jdk="21"
 +		dir="./lib/jvm/java-$jdk-openjdk"
 +		ctsym="$dir/lib/ct.sym"
-+		if ! [[ -f "$ctsym" ]]; then
-+			# Doesn't exist; continue
-+			echo "[!] JDK $jdk - ct.sym doesn't exist!"
-+			echo "[!] ${ctsym}"
-+			return 1
-+		fi
++	if ! [[ -f "$ctsym" ]]; then
++    echo "[!] JDK $jdk - ct.sym doesn't exist!"
++    echo "[!] ${ctsym}"
++ else
 +
 +		ctsym="$(realpath "$ctsym")"
 +		local temp
@@ -55,6 +53,7 @@ index 825f2a886e..0e4ca238a1 100755
 +		# Remove demos from JDK
 +		echo "[*] Removing demo files in JDKs"
 +		rm -rf ./lib/jvm/java-*-openjdk/demo
++ fi
 +
 +		# Create bootstrap ZIP file without compression
 +		echo "[*] Creating bootstrap archives"
