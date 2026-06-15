@@ -1,0 +1,41 @@
+From 25f2cecfb79cd8277e63bf12d9cb9038bee002d7 Mon Sep 17 00:00:00 2001
+From: Wadamzmail <alksndrmetwakil@gmail.com>
+Date: Mon, 15 Jun 2026 18:09:28 +0200
+Subject: [PATCH] openjdk 17 cleanup
+
+---
+ packages/java-17-openjdk/build.sh | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/packages/java-17-openjdk/build.sh b/packages/java-17-openjdk/build.sh
+index 7e6e868..59a70cf 100644
+--- a/packages/java-17-openjdk/build.sh
++++ b/packages/java-17-openjdk/build.sh
+@@ -95,6 +95,24 @@ termux_step_make_install() {
+ 	mkdir -p $TERMUX_PREFIX/lib/jvm/java-17-openjdk/etc/profile.d
+ 	echo "export JAVA_HOME=$TERMUX_PREFIX/lib/jvm/java-17-openjdk/" > \
+ 		$TERMUX_PREFIX/lib/jvm/java-17-openjdk/etc/profile.d/java.sh
++		
++	ln -sf "$TERMUX_PREFIX/lib/jvm/java-17-openjdk/etc/profile.d/java.sh" "$TERMUX_PREFIX/etc/profile.d/java.sh"
++
++    # Remove unnecessary files
++    rm -vrf "$TERMUX_PREFIX/lib/jvm/java-17-openjdk/demo"
++
++    # Strip binaries
++    "$STRIP" $TERMUX_PREFIX/lib/jvm/java-17-openjdk/bin/*
++
++    # Symlink binaries
++    for bin in $TERMUX_PREFIX/lib/jvm/java-17-openjdk/bin/*; do
++            ln -sf "$bin" "$TERMUX_PREFIX/bin/$(basename "$bin")"
++    done
++
++    # Symlink manpages
++    for page in $TERMUX_PREFIX/lib/jvm/java-17-openjdk/man/man1/*; do
++            ln -sf "$page" "$TERMUX_PREFIX/share/man/man1/$(basename "$page")"
++    done		
+ }
+ 
+ termux_step_post_make_install() {
+-- 
+2.52.0
+

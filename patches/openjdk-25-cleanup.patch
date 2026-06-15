@@ -1,0 +1,41 @@
+From 5ad9758cc5f409803f2a80085aac9fc8ce0901fe Mon Sep 17 00:00:00 2001
+From: Wadamzmail <alksndrmetwakil@gmail.com>
+Date: Mon, 15 Jun 2026 18:05:47 +0200
+Subject: [PATCH] openjdk 25 cleanup
+
+---
+ packages/java-25-openjdk/build.sh | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/packages/java-25-openjdk/build.sh b/packages/java-25-openjdk/build.sh
+index e0184c3..45a1ec3 100644
+--- a/packages/java-25-openjdk/build.sh
++++ b/packages/java-25-openjdk/build.sh
+@@ -123,6 +123,24 @@ termux_step_make_install() {
+ 	mkdir -p $TERMUX_PREFIX/lib/jvm/java-25-openjdk/etc/profile.d
+ 	echo "export JAVA_HOME=$TERMUX_PREFIX/lib/jvm/java-25-openjdk/" > \
+ 		$TERMUX_PREFIX/lib/jvm/java-25-openjdk/etc/profile.d/java.sh
++	
++	ln -sf "$TERMUX_PREFIX/lib/jvm/java-25-openjdk/etc/profile.d/java.sh" "$TERMUX_PREFIX/etc/profile.d/java.sh"
++
++    # Remove unnecessary files
++    rm -vrf "$TERMUX_PREFIX/lib/jvm/java-25-openjdk/demo"
++
++    # Strip binaries
++    "$STRIP" $TERMUX_PREFIX/lib/jvm/java-25-openjdk/bin/*
++
++    # Symlink binaries
++    for bin in $TERMUX_PREFIX/lib/jvm/java-25-openjdk/bin/*; do
++            ln -sf "$bin" "$TERMUX_PREFIX/bin/$(basename "$bin")"
++    done
++
++    # Symlink manpages
++    for page in $TERMUX_PREFIX/lib/jvm/java-25-openjdk/man/man1/*; do
++            ln -sf "$page" "$TERMUX_PREFIX/share/man/man1/$(basename "$page")"
++    done		
+ }
+ 
+ termux_step_post_make_install() {
+-- 
+2.52.0
+
