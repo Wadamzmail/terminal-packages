@@ -104,7 +104,7 @@ declare -a PATCHES=(
   "use-our-keys-to-install-deps.patch"
 
   # test by Wadamzmail 
-  "openssh-disable-kerberos.patch"
+ # "openssh-disable-kerberos.patch"
   
 )
 
