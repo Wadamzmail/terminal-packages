@@ -32,6 +32,7 @@ BASE_PACKAGES=(
     "patch"
     "unzip"
     "zip"
+    "zlib" 
 
 )
 
