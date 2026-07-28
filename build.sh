@@ -50,7 +50,7 @@ declare -a PATCHES=(
 
   # Remove 'scalar' binary from $PREFIX/bin and make it a symlink
   # to $PREFIX/libexec/git-core/scalar
-  "git-symlink-scalar.patch"
+#  "git-symlink-scalar.patch"
 
   # subversion fails to compile, complaining that the `apr.h` and other headers
   # could not be found. These headers are located in $PREFIX/include/apr-1
