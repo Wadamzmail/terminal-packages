@@ -107,7 +107,6 @@ COTG_PACKAGES+=(
     # cmake and libllvm for Android
     # useful for Android SDK
     "cmake"
-    "dart"
     "libllvm" 
     #AndroidIDE 
     "jq" 
@@ -115,6 +114,7 @@ COTG_PACKAGES+=(
     "libandroid-glob" 
     "nodejs"
     "npm"
+    "dart" 
    # "openssh"
    # "openjdk-17"
     "openjdk-21"
