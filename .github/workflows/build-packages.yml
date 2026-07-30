@@ -29,6 +29,7 @@ jobs:
           submodules: recursive
 
       - name: Cache built packages
+        if: false
         id: cache-packages
         uses: actions/cache@v4
         with:
@@ -75,16 +76,7 @@ jobs:
           else
             echo "NDK cached"
           fi
-          
-      - name: Clean libandroid-support
-        run: |
-         rm -f /data/data/.built-packages/libandroid-support || true
-
-         rm -f /data/data/dev.mutwakil.androidide/files/usr/lib/libandroid-support.so || true
-         rm -f /data/data/dev.mutwakil.androidide/files/usr/lib/libandroid-support.a || true
-
-         rm -rf /github/home/.termux-build/libandroid-support || true
-
+         
       - name: Build packages
         run: |
           export ANDROID_NDK_HOME=/github/home/lib/android-ndk-r29
