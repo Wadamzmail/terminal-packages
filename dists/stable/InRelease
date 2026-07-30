@@ -6,7 +6,7 @@ Version: 1
 Architectures: aarch64 all
 Description: stable repository
 Suite: stable
-Date: Thu, 30 Jul 2026 00:43:48 UTC
+Date: Thu, 30 Jul 2026 07:32:07 UTC
 Components: main
 MD5Sum:
  0a95fd2f060da4f0b43cef8e1418c11d 14062 main/binary-all/Packages
@@ -46,15 +46,15 @@ SHA512:
  267bdbd6bdc35b07bc6164332f279cbf59da824803b68bea4c6f796b6528ee7474afcf4b2ea06eb868ed1c231ed82a150b4b11216b6f962cdaae16028601276f 115232 main/Contents-all.xz
 -----BEGIN PGP SIGNATURE-----
 
-iQGzBAEBCAAdFiEEt0AUFxSTf1mH4vVq2Q1cfexyF2UFAmpqnkoACgkQ2Q1cfexy
-F2WJUQwAi1hJf9Mkw9QoGsFF1Eojx79luFqnMAVUWTBbYF+YYCbVh0ePlPzHBDGJ
-OAS+8zUIBcY7gJr3MnzWNsryeqtUA38oSDXb/zk60D10WK8GOZ/+qfIgJPiY6UI2
-kj1hCPYz4hBQjkwmYZENMfOVSEcZJHxNiXQHNU6u1vmtrhb40lFYIdnbmTMbhKLr
-GeYQ1Vy2EZ4IgRt5zgIq9LIxxxzihmZRpCIHyYE4nfM0i0+J7BJzZ6fTn2Zdjhsm
-pavJhYLs9H4yjzRcmhFo1PeC2XUcVDIsNj21UJCYMMhm/hpXF5oyDQXNwKEigBnz
-cwhtDBuBE2Pru3a2RyAbk+bPcTx96TcZm3MmXO6czBkLPVybh9r3RNrVaJ8Jr2YY
-P51fuUJQYIJ9GYsOTyXu5g+zB6aGIe8YY08fIdOjwstWD0bgggXnwBLPsRNZA27a
-iV7CfvexYTv/g3vYn4TP2RzREDjHZHz9QTp/z8XIg8OnRSBtG+F6ThS/ASpCupma
-tQnLVkjA
-=7Qa3
+iQGzBAEBCAAdFiEEt0AUFxSTf1mH4vVq2Q1cfexyF2UFAmpq/f0ACgkQ2Q1cfexy
+F2XwdAv9FEYpOsqP9O//SmtNwdTuh6vtlm/gAJxFirhtmSfYMiivViEfwj/W5w3B
+mCNF78m/3L2C6w7ak/5zPjxL/bxAJ2XirhvpRWUkF/xJHb+yb4iPe1JtwhHTdLJ+
+067jisg6D4/NvNdjw0rFN+cIFm63ADNxdfae0aTftHiYNHKbsVlW+0OxtJXJjbJK
+oaNyFQCnBrnPet/0NLQGynrYszDS2cb2RqxlMQ2xmUxv1Yyl5uAzj8iz5cjmkizd
+cZSLwr7nElkLISPqgN5MDBSUGfgWCWiDa1pSTSeqBw1GrdpiVwEohoKlRRmWWLp7
+nHgdrfXrwPqltPEzzKCTS/PIbS7CXWQ/mTv2MWgkOXaYaWfjlnYZA11igJB9fmHV
+JvhO9T7pCsldP5tbzS39meqizRGTnVlZf8EQ0n0Hoh07amU0Csb5PiAYLy2I7lDP
+s8B3e2LzlbIHkh6paJvf8YS0YCJqV2fCf+GGP56/dRRy/Vq2ez4ng37V9/tmvFBE
+RAlqX41n
+=7Nje
 -----END PGP SIGNATURE-----
