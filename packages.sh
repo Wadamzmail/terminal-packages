@@ -22,6 +22,7 @@ BASE_PACKAGES=(
     "ed"
     "debianutils"
     "dos2unix"
+    "dart" 
     "git"
     "inetutils"
     "lsof"
