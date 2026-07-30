@@ -136,6 +136,7 @@ ndk-sysroot
 net-tools
 ninja
 nodejs
+npm
 oniguruma
 openjdk-17
 openjdk-21
