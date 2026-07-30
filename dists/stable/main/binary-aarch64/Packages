@@ -366,6 +366,20 @@ SHA1: f24aca13c426742094c604f208af4e15567091a6
 SHA256: 9a5c504f3a6edd53d4ac7215d30553cd553f37cfb64fdaa7b0b0926b9ca5689c
 SHA512: 080c5aed7a80c6412f8dbc7fdf5f463569d7170347163f6728c978093c8b8595b50e562dc854b6e53d7925899076f58011d03535384bb3d178960ba8991ef0e2
 
+Package: dart
+Architecture: aarch64
+Installed-Size: 387668
+Maintainer: @0x1ACA663
+Version: 3.12.2
+Homepage: https://dart.dev/
+Description: Dart is a general-purpose programming language
+Filename: dists/stable/main/binary-aarch64/dart_3.12.2_aarch64.deb
+Size: 91132736
+MD5Sum: 4d95e6455b7d52278259b4b3a5439c95
+SHA1: 9e9e451ad49be9fff2eba8bfd52f4079c227825c
+SHA256: dfc1c06889d03c5aff8a2524c328ab8f12368f60ba30c4b719c899bf2ad9ac8d
+SHA512: ba30887cdc874df1077c960bf9f55f424f8707df9a7c1dd8d4829dceb6ec0dc40e0170fef83e95dfca4f3d022844d752467774e89c48021b08ba2a0e1580ceab
+
 Package: dash
 Architecture: aarch64
 Installed-Size: 176
