@@ -113,12 +113,9 @@ COTG_PACKAGES+=(
     "libandroid-support"
     "libandroid-glob" 
     
-    "nodejs"
-    "npm"
+ #   "nodejs"
+ #   "npm"
     "dart" 
     "libicu" 
-   # "openssh"
-   # "openjdk-17"
     "openjdk-21"
-   # "openjdk-25" 
 )
