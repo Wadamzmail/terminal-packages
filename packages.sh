@@ -89,7 +89,7 @@ COTG_PACKAGES=(
     "${COTG_PACKAGES__BASE[@]}"
     "${COTG_PACKAGES__DEBUG[@]}"
     "${COTG_PACKAGES__RELEASE[@]}"
-    "${BASE_PACKAKES[@]}"
+    "${BASE_PACKAGES[@]}"
 )
 
 # Extra packages that need to be available
