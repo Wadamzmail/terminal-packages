@@ -135,6 +135,7 @@ jobs:
           tag_name: packages-${{ inputs.arch }}
           name: Packages Build ${{ inputs.arch }}
           files: output/packages-${{ inputs.arch }}.zip
+          draft: true
           fail_on_unmatched_files: false
           overwrite: true 
 
