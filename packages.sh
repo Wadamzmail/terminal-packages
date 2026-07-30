@@ -22,7 +22,6 @@ BASE_PACKAGES=(
     "ed"
     "debianutils"
     "dos2unix"
-    "dart" 
     "git"
     "inetutils"
     "lsof"
@@ -108,12 +107,14 @@ COTG_PACKAGES+=(
     # cmake and libllvm for Android
     # useful for Android SDK
     "cmake"
+    "dart"
     "libllvm" 
-    
     #AndroidIDE 
     "jq" 
     "libandroid-support"
     "libandroid-glob" 
+    "nodejs"
+    "npm"
    # "openssh"
    # "openjdk-17"
     "openjdk-21"
