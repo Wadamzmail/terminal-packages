@@ -75,6 +75,15 @@ jobs:
           else
             echo "NDK cached"
           fi
+          
+      - name: Clean libandroid-support
+        run: |
+         rm -f /data/data/.built-packages/libandroid-support || true
+
+         rm -f /data/data/dev.mutwakil.androidide/files/usr/lib/libandroid-support.so || true
+         rm -f /data/data/dev.mutwakil.androidide/files/usr/lib/libandroid-support.a || true
+
+         rm -rf /github/home/.termux-build/libandroid-support || true
 
       - name: Build packages
         run: |
