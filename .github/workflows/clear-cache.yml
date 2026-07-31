@@ -12,9 +12,7 @@ jobs:
 
     steps:
       - name: Delete all caches
+        run: |
+          gh cache delete --all --succeed-on-no-caches
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh cache delete --all \
-            --repo "$GITHUB_REPOSITORY" \
-            --confirm 
