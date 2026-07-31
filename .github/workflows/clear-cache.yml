@@ -1,4 +1,4 @@
-name: Delete All Caches
+name: Clear Build Caches
 
 on:
   workflow_dispatch:
@@ -7,12 +7,14 @@ permissions:
   actions: write
 
 jobs:
-  delete-caches:
+  clear-cache:
     runs-on: ubuntu-latest
 
     steps:
       - name: Delete all caches
         run: |
-          gh cache delete --all --succeed-on-no-caches
+          gh cache delete --all \
+            --succeed-on-no-caches \
+            --repo "${GITHUB_REPOSITORY}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
