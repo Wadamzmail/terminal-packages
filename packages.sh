@@ -28,7 +28,6 @@ BASE_PACKAGES=(
     "mandoc"
     "nano"
     "net-tools"
-   # "openjdk-21"
     "patch"
     "unzip"
     "zip"
@@ -113,10 +112,10 @@ COTG_PACKAGES+=(
     "libandroid-support"
     "libandroid-glob" 
     
-    "nodejs"
-    "npm"
-    "dart" 
-    "libicu" 
-    "openssh" 
+ #   "nodejs"
+ #   "npm"
+ #   "dart" 
+  #  "libicu" 
+#    "openssh" 
     "openjdk-21"
 )
