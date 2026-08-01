@@ -76,7 +76,7 @@ COTG_PACKAGES__DEBUG=(
     "python"
     "python-pip"
     "vim"
-    "wget"
+  #  "wget"
     "which"
 )
 
@@ -105,8 +105,8 @@ COTG_PACKAGES+=(
 
     # cmake and libllvm for Android
     # useful for Android SDK
-    "cmake"
-    "libllvm" 
+  #  "cmake"
+  #  "libllvm" 
     #AndroidIDE 
     "jq" 
     "libandroid-support"
@@ -117,5 +117,5 @@ COTG_PACKAGES+=(
  #   "dart" 
   #  "libicu" 
 #    "openssh" 
-    "openjdk-21"
+ #   "openjdk-21"
 )
