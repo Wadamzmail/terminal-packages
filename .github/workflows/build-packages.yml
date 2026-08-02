@@ -85,6 +85,16 @@ jobs:
           export NDK=/github/home/lib/android-ndk-r29
           bash -x build.sh -a "${{ inputs.arch }}"
 
+      - name: Save built packages cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            /data/data/.built-packages
+            /github/home/.termux-build
+            output/${{ inputs.arch }}
+          key: termux-build-${{ inputs.arch }}-${{ hashFiles('packages/**') }}
+
       - name: Show build log
         if: always()
         run: cat output/arm/build.log || cat output/aarch64/build.log || echo "no log"
