@@ -285,7 +285,7 @@ fi
 
 BUILD_ARGS+=("${COTG_PACKAGES[@]}")
 
-if ! { time scripts/run-docker.sh ./build-package.sh "${BUILD_ARGS[@]}" |&
+if ! { time ./build-package.sh "${BUILD_ARGS[@]}" |&
   tee "$OUTPUT_DIR/build.log"; }; then
   scribe_error_exit "Failed to build packages."
 fi
