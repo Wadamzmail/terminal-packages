@@ -19,9 +19,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    container:
-      image: ghcr.io/termux/package-builder:latest
-      options: --privileged --device /dev/fuse
+  #  container:
+   #   image: ghcr.io/termux/package-builder:latest
+    #  options: --privileged --device /dev/fuse
 
     steps:
       - uses: actions/checkout@v4
