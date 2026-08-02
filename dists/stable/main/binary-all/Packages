@@ -37,11 +37,11 @@ Homepage: https://curl.se/docs/caextract.html
 Depends: ca-certificates (= 1:2026.05.14)
 Description: Common CA certificates (java keystore format)
 Filename: dists/stable/main/binary-all/ca-certificates-java_1C2026.05.14_all.deb
-Size: 96492
-MD5Sum: 75d4ea34440789f21a8569b67d91e11b
-SHA1: ff73297ac7a69a40316bbe4997e0be6d1ad3e57f
-SHA256: f406b134732a46773aeb80f417b156fbda47f16bfcdbcc566d6860ce8a0dd734
-SHA512: 9485df8467968c6d8ef24e5f9afd893e0fea358fc5d341cffac8ef2548948c748783b04f7f17c6b18dafbfe306aae8cad9d05d1653e87c4d2399ece5fc2c85c8
+Size: 96484
+MD5Sum: af344ad51e4c1fabf1d4a444ba5fba1a
+SHA1: a1d6161c6f05e5e7dcc3fc31f7f5731bf413bc73
+SHA256: 51aee1edae71e9d67b6c98cfffae228cbdc0d0ecaf26571f25ca33fd2fad05dd
+SHA512: 7cb2d52989b43e50c1c8d9ea394f6be127621f49056cf67ea0fbcea2ae998408dcf6cb0f70fc7462a0e940c41926695d9d1050cf0034719e899f122980b8e4ce
 
 Package: ca-certificates
 Architecture: all
@@ -132,6 +132,35 @@ MD5Sum: bd60144fdf1be161ce2f65fe5bf2e503
 SHA1: f0a9b2bc4833b67314ea3e329a5adbb13c75a7b0
 SHA256: 2646a61eaaa633710d7dd65427cd4fa28d35b2d59f57a5fa188e2b8eba80b7d6
 SHA512: fca465f693e0d7f1820ffbef0cd56c5463ad009a633e7aec967123f3ca37e2622e45ee1722b39281b3c0285623fe1febccb79baa3069bda8593bebf09291ab45
+
+Package: glib-cross
+Architecture: all
+Installed-Size: 83076
+Maintainer: @termux
+Version: 2.88.2-1
+Homepage: https://developer.gnome.org/glib/
+Depends: glib (= 2.88.2-1)
+Description: glib for host (NOT for Termux)
+Filename: dists/stable/main/binary-all/glib-cross_2.88.2-1_all.deb
+Size: 13151248
+MD5Sum: 257b31f1aa3283b935b0721dfbca8f17
+SHA1: 02093fe4d8ada245298a6a8005c574b989910428
+SHA256: db160b64b690703eea7585b4f05ced30cfa2175782ed359bc3dbba9386301a43
+SHA512: 135136e7fc35c20faaf620a75fcc4d3ab3695ebfc03b552b43eee4d800089b8c7a5101fd0f37f3b16a35ede9e2b76fc8962de7ece218dade302b6d61d8bada77
+
+Package: openjdk-21-source
+Architecture: all
+Installed-Size: 52380
+Maintainer: @termux
+Version: 21.0.11
+Homepage: https://openjdk.java.net
+Description: Source files for openjdk-21
+Filename: dists/stable/main/binary-all/openjdk-21-source_21.0.11_all.deb
+Size: 49124212
+MD5Sum: e7835abf8bbb9ad2a5b1fe335d403fca
+SHA1: 7a4077ad4fd6054f6e0494fad1786174a90f6afc
+SHA256: 7e48ec5170b48724bebc5e4818935b47788a0dac7006c02444ba486415ff2510
+SHA512: 11313820b513b6fc93fc1938e1939dff4dcad9e3b0e2340290fb8e4504ed42cbf3109b7c38178c7a5a86493b6c5ce7ecf12cfbe68cf66b8c14f25ccdb3989e17
 
 Package: python-ensurepip-wheels
 Architecture: all
@@ -258,6 +287,21 @@ MD5Sum: bb19b91d29cd4f7594a4800682cddb22
 SHA1: 8b04964201f1255f35b96999b4fbacf174263490
 SHA256: 2c25313e5ef1df57c8739706c31e36e8be3542939257c54212f8a2772c46d26b
 SHA512: d8af57424b97a3c20d14e102bfeb39d93f32f34d5653b60602053c7c485c46f1174ab6147f4fd922b2a72dab262c389bf33b2a9df0e059d9a8db4df32897ba5c
+
+Package: update-info-dir
+Architecture: all
+Installed-Size: 48
+Maintainer: @termux
+Version: 7.3
+Homepage: https://www.gnu.org/software/texinfo/
+Depends: texinfo (= 7.3)
+Description: Update or create index file from all installed info files in directory
+Filename: dists/stable/main/binary-all/update-info-dir_7.3_all.deb
+Size: 2500
+MD5Sum: 24ba3e1e43f2d0d793bbfb5f36cea76a
+SHA1: b455288ae0f47408546d89c80e362fb66b54a674
+SHA256: bf7f52f159f572e70d7b1a60638b92e83c7c5922c49b0e7c48d4834ed751892c
+SHA512: 12d7c5619b8578b7c5a83d33aebec69e13ecbacbec72917e1e8f069e67d2b064d5bd77d3bc1dcd1c22d09babf792f19e08d6a7686f277e4cedbc09c110990c95
 
 Package: xcb-proto
 Architecture: all
