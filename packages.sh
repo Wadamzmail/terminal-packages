@@ -116,6 +116,7 @@ COTG_PACKAGES+=(
  #   "npm"
     "dart" 
     "libicu" 
+    "openssl" 
   #  "openssh" 
     "openjdk-21"
 )
