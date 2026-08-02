@@ -29,12 +29,12 @@ jobs:
           submodules: recursive
 
       - name: Cache built packages
-        if: false 
+        if: always() 
         id: cache-packages
         uses: actions/cache@v4
         with:
           path: |
-            /data/data/.built-packages
+            /data
             /github/home/.termux-build
             output/${{ inputs.arch }}
           key: termux-build-${{ inputs.arch }}-${{ hashFiles('packages/**') }}
@@ -65,12 +65,12 @@ jobs:
           export NDK=/github/home/lib/android-ndk-r29
           bash -x build.sh -a "${{ inputs.arch }}"
 
-      - name: Save built packages cache
-        if: false
+      - name: Save built packages cache 
+        if: always() 
         uses: actions/cache/save@v4
         with:
           path: |
-            /data/data/.built-packages
+            /data
             /github/home/.termux-build
             output/${{ inputs.arch }}
           key: termux-build-${{ inputs.arch }}-${{ hashFiles('packages/**') }}
