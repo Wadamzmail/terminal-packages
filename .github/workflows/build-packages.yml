@@ -133,7 +133,9 @@ jobs:
           name: Packages Build ${{ inputs.arch }}
           files: output/packages-${{ inputs.arch }}.zip
           prerelease: true
+          draft: false
           fail_on_unmatched_files: false
+          overwrite_files: true
           overwrite: true 
 
   publish:
