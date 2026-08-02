@@ -29,7 +29,7 @@ jobs:
           submodules: recursive
 
       - name: Cache built packages
-        if: always()
+        if: false 
         id: cache-packages
         uses: actions/cache@v4
         with:
@@ -46,26 +46,6 @@ jobs:
         run: |
           echo "Cache hit: ${{ steps.cache-packages.outputs.cache-hit }}"
           ls output/${{ inputs.arch }}/ | head -10 || echo "output/${{ inputs.arch }} empty"
-
-      - name: Cache Gradle
-        if: false
-        uses: actions/cache@v4
-        with:
-          path: |
-            /github/home/.gradle/caches
-            /github/home/.gradle/wrapper
-          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-
-          save-always: true
-
-      - name: Cache NDK
-        if: false
-        uses: actions/cache@v4
-        with:
-          path: /github/home/lib/android-ndk-r29
-          key: android-ndk-r29
-          save-always: true
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -86,7 +66,7 @@ jobs:
           bash -x build.sh -a "${{ inputs.arch }}"
 
       - name: Save built packages cache
-        if: always()
+        if: false
         uses: actions/cache/save@v4
         with:
           path: |
