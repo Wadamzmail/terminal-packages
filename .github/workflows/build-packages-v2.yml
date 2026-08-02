@@ -1,0 +1,180 @@
+name: Build Packages V2
+
+on:
+  workflow_dispatch:
+    inputs:
+      arch:
+        description: "Target architecture"
+        required: true
+        default: "aarch64"
+        type: choice
+        options:
+          - aarch64
+          - arm
+
+      stage1_packages:
+        description: "Packages to build in stage 1 (space-separated)"
+        required: true
+        default: "zlib openssl ca-certificates"
+
+      stage2_packages:
+        description: "Packages to build in stage 2 (space-separated)"
+        required: true
+        default: "rhash"
+
+permissions:
+  contents: write
+
+jobs:
+  stage1:
+    name: Stage 1 - Base packages
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/termux/package-builder:latest
+      options: --privileged --device /dev/fuse
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Android NDK
+        run: |
+          mkdir -p /github/home/lib
+
+          curl -L \
+            "https://dl.google.com/android/repository/android-ndk-r29-linux.zip" \
+            -o /tmp/ndk.zip
+
+          unzip -q /tmp/ndk.zip -d /github/home/lib
+
+      - name: Build stage 1
+        run: |
+          export ANDROID_NDK_HOME=/github/home/lib/android-ndk-r29
+          export NDK=/github/home/lib/android-ndk-r29
+
+          bash -x build.sh \
+            -a "${{ inputs.arch }}" \
+            ${{ inputs.stage1_packages }}
+
+      - name: Generate APT repository
+        run: |
+          export COTG_OUTPUT_DIR="$(pwd)/output"
+          export COTG_REPO_DIR="$(pwd)/output/repo"
+
+          bash ./generate-apt-repo.sh
+
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.PACKAGES_GPG_KEY }}" |
+            base64 -d |
+            gpg --batch --import
+
+      - name: Sign repository
+        run: |
+          echo "${{ secrets.PACKAGES_GPG_KEY_PASS }}" |
+            gpg \
+              --yes \
+              --passphrase-fd 0 \
+              --pinentry-mode loopback \
+              --digest-algo SHA256 \
+              --clearsign \
+              -u "B740141714937F5987E2F56AD90D5C7DEC721765" \
+              -o output/repo/dists/stable/InRelease \
+              output/repo/dists/stable/Release
+
+      - name: Deploy stage 1 repository
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: pages
+          publish_dir: output/repo
+          keep_files: false
+
+
+  stage2:
+    name: Stage 2 - Remaining packages
+    needs: stage1
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/termux/package-builder:latest
+      options: --privileged --device /dev/fuse
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Android NDK
+        run: |
+          mkdir -p /github/home/lib
+
+          curl -L \
+            "https://dl.google.com/android/repository/android-ndk-r29-linux.zip" \
+            -o /tmp/ndk.zip
+
+          unzip -q /tmp/ndk.zip -d /github/home/lib
+
+      - name: Configure Stage 1 APT repository
+        run: |
+          mkdir -p /etc/apt/sources.list.d
+
+          echo \
+            "deb [trusted=yes] https://Wadamzmail.github.io/terminal-packages stable main" \
+            > /etc/apt/sources.list.d/cotg.list
+
+          apt update
+
+      - name: Build stage 2
+        run: |
+          export ANDROID_NDK_HOME=/github/home/lib/android-ndk-r29
+          export NDK=/github/home/lib/android-ndk-r29
+
+          bash -x build.sh \
+            -a "${{ inputs.arch }}" \
+            -I \
+            ${{ inputs.stage2_packages }}
+
+      - name: Generate final APT repository
+        run: |
+          export COTG_OUTPUT_DIR="$(pwd)/output"
+          export COTG_REPO_DIR="$(pwd)/output/repo"
+
+          bash ./generate-apt-repo.sh
+
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.PACKAGES_GPG_KEY }}" |
+            base64 -d |
+            gpg --batch --import
+
+      - name: Sign repository
+        run: |
+          echo "${{ secrets.PACKAGES_GPG_KEY_PASS }}" |
+            gpg \
+              --yes \
+              --passphrase-fd 0 \
+              --pinentry-mode loopback \
+              --digest-algo SHA256 \
+              --clearsign \
+              -u "B740141714937F5987E2F56AD90D5C7DEC721765" \
+              -o output/repo/dists/stable/InRelease \
+              output/repo/dists/stable/Release
+
+      - name: Deploy final repository
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: pages
+          publish_dir: output/repo
+          keep_files: false
