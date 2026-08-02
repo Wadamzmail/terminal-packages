@@ -100,30 +100,30 @@ jobs:
         run: cat output/arm/build.log || cat output/aarch64/build.log || echo "no log"
 
       - name: Show configure failure
-       if: failure()
-       run: |
-        echo "=== config.log files ==="
+        if: failure()
+        run: |
+         echo "=== config.log files ==="
 
-        find /github/home/.termux-build \
-        -path "*/build/config.log" \
-        -type f \
-        -print
+         find /github/home/.termux-build \
+         -path "*/build/config.log" \
+         -type f \
+         -print
 
-        echo "=== compiler failure details ==="
+         echo "=== compiler failure details ==="
 
-        find /github/home/.termux-build \
-        -path "*/build/config.log" \
-        -type f \
-        -exec grep -l "C compiler cannot create executables" {} \; \
-        | while read -r log; do
-          echo
-          echo "========================================"
-          echo "$log"
-          echo "========================================"
-          grep -A80 -B80 \
-            "C compiler cannot create executables" \
-            "$log" || true
-          done
+         find /github/home/.termux-build \
+         -path "*/build/config.log" \
+         -type f \
+         -exec grep -l "C compiler cannot create executables" {} \; \
+         | while read -r log; do
+           echo
+           echo "========================================"
+           echo "$log"
+           echo "========================================"
+           grep -A80 -B80 \
+             "C compiler cannot create executables" \
+             "$log" || true
+           done
       
       - name: Debug debs location
         if: always()
