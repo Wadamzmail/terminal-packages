@@ -105,8 +105,8 @@ COTG_PACKAGES+=(
 
     # cmake and libllvm for Android
     # useful for Android SDK
-  #  "cmake"
-  #  "libllvm" 
+    "cmake"
+    "libllvm" 
     #AndroidIDE 
     "jq" 
     "libandroid-support"
