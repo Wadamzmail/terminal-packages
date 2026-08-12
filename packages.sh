@@ -105,6 +105,8 @@ COTG_PACKAGES+=(
 
     # cmake and libllvm for Android
     # useful for Android SDK
+
+    #build it in the second time
     "cmake"
     "libllvm" 
     #AndroidIDE 
@@ -118,4 +120,7 @@ COTG_PACKAGES+=(
    # "libicu" 
   #  "openssh" 
     "openjdk-21"
+
+    #build it in the 3rd time
+    "openjdk-25"
 )
