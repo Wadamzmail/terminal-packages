@@ -1,8 +1,13 @@
-name: Build Packages V2
+name: Build Selected Packages
 
 on:
   workflow_dispatch:
     inputs:
+      packages:
+        description: "Packages to build (comma-separated)"
+        required: true
+        type: string
+
       arch:
         description: "Target architecture"
         required: true
@@ -12,22 +17,11 @@ on:
           - aarch64
           - arm
 
-      stage1_packages:
-        description: "Packages to build in stage 1 (space-separated)"
-        required: true
-        default: "zlib openssl ca-certificates"
-
-      stage2_packages:
-        description: "Packages to build in stage 2 (space-separated)"
-        required: true
-        default: "rhash"
-
 permissions:
   contents: write
 
 jobs:
-  stage1:
-    name: Stage 1 - Base packages
+  build:
     runs-on: ubuntu-latest
 
     container:
@@ -40,117 +34,167 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Show selected packages
+        run: |
+          echo "Architecture: ${{ inputs.arch }}"
+          echo "Packages: ${{ inputs.packages }}"
+
+      - name: Cache built packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            /data
+            /github/home/.termux-build
+            output/${{ inputs.arch }}
+          key: termux-build-${{ inputs.arch }}-${{ hashFiles('packages/**') }}
+          restore-keys: |
+            termux-build-${{ inputs.arch }}-
+          save-always: true
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Setup Android NDK
         run: |
-          mkdir -p /github/home/lib
+          if [ ! -d /github/home/lib/android-ndk-r29 ]; then
+            curl -L \
+              "https://dl.google.com/android/repository/android-ndk-r29-linux.zip" \
+              -o /tmp/ndk.zip
 
-          curl -L \
-            "https://dl.google.com/android/repository/android-ndk-r29-linux.zip" \
-            -o /tmp/ndk.zip
+            unzip -q \
+              /tmp/ndk.zip \
+              -d /github/home/lib/
+          else
+            echo "NDK cached"
+          fi
 
-          unzip -q /tmp/ndk.zip -d /github/home/lib
-
-      - name: Build stage 1
+      - name: Build selected packages
         run: |
           export ANDROID_NDK_HOME=/github/home/lib/android-ndk-r29
           export NDK=/github/home/lib/android-ndk-r29
 
-          bash -x build.sh \
+          mkdir -p output/${{ inputs.arch }}
+
+          bash -x buildv2.sh \
             -a "${{ inputs.arch }}" \
-            ${{ inputs.stage1_packages }}
+            -r "https://packages-cf.termux.dev/apt/termux-main" \
+            -s packages/termux-keyring/termux.gpg \
+            "${{ inputs.packages }}"
+
+      - name: Show build output
+        if: always()
+        run: |
+          echo "=== Generated packages ==="
+
+          find output/${{ inputs.arch }} \
+            -maxdepth 1 \
+            -type f \
+            -name "*.deb" \
+            -print
+
+          echo
+          echo "=== Build log ==="
+
+          cat output/${{ inputs.arch }}/build.log || true
+
+      - name: Upload built packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-packages-${{ inputs.arch }}
+          path: output/${{ inputs.arch }}/*.deb
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+
+    env:
+      GPG_KEY_ID: B740141714937F5987E2F56AD90D5C7DEC721765
+
+    steps:
+
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Download built packages
+        uses: actions/download-artifact@v4
+        with:
+          name: built-packages-${{ inputs.arch }}
+          path: output/${{ inputs.arch }}
+
+      - name: Checkout pages branch
+        run: |
+          git clone \
+            --branch pages \
+            --single-branch \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare repository packages
+        run: |
+          set -e
+
+          ARCH="${{ inputs.arch }}"
+
+          mkdir -p output/all-debs
+
+          echo "Collecting existing packages..."
+
+          find pages \
+            -type f \
+            -name "*.deb" \
+            -exec cp -f {} output/all-debs/ \;
+
+          echo "Adding newly built packages..."
+
+          find "output/${ARCH}" \
+            -maxdepth 1 \
+            -type f \
+            -name "*.deb" \
+            -exec cp -f {} output/all-debs/ \;
+
+          echo
+          echo "=== All repository packages ==="
+
+          find output/all-debs \
+            -maxdepth 1 \
+            -type f \
+            -name "*.deb" \
+            -printf '%f\n' |
+            sort
+
+      - name: Install repository tools
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            gnupg \
+            wget \
+            curl
+
+      - name: Download termux-apt-repo
+        run: |
+          wget \
+            https://github.com/termux/termux-apt-repo/raw/refs/heads/master/termux-apt-repo \
+            -O termux-apt-repo
+
+          chmod +x termux-apt-repo
 
       - name: Generate APT repository
         run: |
-          export COTG_OUTPUT_DIR="$(pwd)/output"
-          export COTG_REPO_DIR="$(pwd)/output/repo"
+          set -e
 
-          bash ./generate-apt-repo.sh
+          rm -rf output/repo
 
-      - name: Import GPG key
-        run: |
-          echo "${{ secrets.PACKAGES_GPG_KEY }}" |
-            base64 -d |
-            gpg --batch --import
+          mkdir -p output/repo
 
-      - name: Sign repository
-        run: |
-          echo "${{ secrets.PACKAGES_GPG_KEY_PASS }}" |
-            gpg \
-              --yes \
-              --passphrase-fd 0 \
-              --pinentry-mode loopback \
-              --digest-algo SHA256 \
-              --clearsign \
-              -u "B740141714937F5987E2F56AD90D5C7DEC721765" \
-              -o output/repo/dists/stable/InRelease \
-              output/repo/dists/stable/Release
-
-      - name: Deploy stage 1 repository
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: pages
-          publish_dir: output/repo
-          keep_files: false
-
-
-  stage2:
-    name: Stage 2 - Remaining packages
-    needs: stage1
-    runs-on: ubuntu-latest
-
-    container:
-      image: ghcr.io/termux/package-builder:latest
-      options: --privileged --device /dev/fuse
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Setup Android NDK
-        run: |
-          mkdir -p /github/home/lib
-
-          curl -L \
-            "https://dl.google.com/android/repository/android-ndk-r29-linux.zip" \
-            -o /tmp/ndk.zip
-
-          unzip -q /tmp/ndk.zip -d /github/home/lib
-
-      - name: Configure Stage 1 APT repository
-        run: |
-          mkdir -p /etc/apt/sources.list.d
-
-          echo \
-            "deb [trusted=yes] https://Wadamzmail.github.io/terminal-packages stable main" \
-            > /etc/apt/sources.list.d/cotg.list
-
-          apt update
-
-      - name: Build stage 2
-        run: |
-          export ANDROID_NDK_HOME=/github/home/lib/android-ndk-r29
-          export NDK=/github/home/lib/android-ndk-r29
-
-          bash -x build.sh \
-            -a "${{ inputs.arch }}" \
-            -I \
-            ${{ inputs.stage2_packages }}
-
-      - name: Generate final APT repository
-        run: |
-          export COTG_OUTPUT_DIR="$(pwd)/output"
-          export COTG_REPO_DIR="$(pwd)/output/repo"
-
-          bash ./generate-apt-repo.sh
+          ./termux-apt-repo \
+            output/all-debs \
+            output/repo \
+            stable \
+            main
 
       - name: Import GPG key
         run: |
@@ -160,18 +204,21 @@ jobs:
 
       - name: Sign repository
         run: |
+          set -e
+
           echo "${{ secrets.PACKAGES_GPG_KEY_PASS }}" |
             gpg \
+              --batch \
               --yes \
               --passphrase-fd 0 \
               --pinentry-mode loopback \
               --digest-algo SHA256 \
               --clearsign \
-              -u "B740141714937F5987E2F56AD90D5C7DEC721765" \
+              -u "${GPG_KEY_ID}" \
               -o output/repo/dists/stable/InRelease \
               output/repo/dists/stable/Release
 
-      - name: Deploy final repository
+      - name: Deploy to pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
