@@ -122,7 +122,7 @@ jobs:
           retention-days: 1
 
   publish:
-    name: Publish ${{ inputs.packages }} (${{ inputs.arch }})
+    name: Publish Repository
     needs: build
     runs-on: ubuntu-latest
 
