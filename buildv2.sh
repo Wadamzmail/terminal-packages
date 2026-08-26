@@ -198,7 +198,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 # Argument parsing
-while getopts "anp:r:s:Ih" opt; do
+while getopts "a:np:r:s:Ih" opt; do
   case "$opt" in
 
     a)
