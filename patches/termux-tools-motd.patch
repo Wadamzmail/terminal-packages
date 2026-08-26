@@ -13,7 +13,7 @@ index 0000000..8b2e358
 + 	@echo "Creating motd file"
 + 
 +-	@echo "Welcome to Termux!" > motd
-++	@echo "Welcome to Code on the Go Terminal!" > motd
+++	@echo "Welcome to AndroidIDE-Dev Terminal!" > motd
 + 	@echo "" >> motd
 +-	@echo "Docs:       https://termux.dev/docs" >> motd
 +-	@echo "Donate:     https://termux.dev/donate" >> motd
@@ -59,7 +59,7 @@ index 0000000..8b2e358
 ++	@echo " - Package management: https://help.ubuntu.com/community/AptGet/Howto" >> motd
 + 	@echo "" >> motd
 +-	@echo "Report issues at https://termux.dev/issues" >> motd
-++	@echo "Report issues at https://github.com/appdevforall/CodeOnTheGo/issues" >> motd
+++	@echo "Report issues at https://github.com/Wadamzmail/AndroidIDE/issues" >> motd
 +diff --git a/motds/motd.sh.in b/motds/motd.sh.in
 +index 1a76844..2ec943d 100644
 +--- a/motds/motd.sh.in
@@ -80,7 +80,7 @@ index 0000000..8b2e358
 +- \e[47m                \e[0m  \e[1mTermux version:\e[0m ${TERMUX_VERSION-Unknown}
 +-"
 ++motd="
-++\e[1mWelcome to Code on the Go Terminal!\e[0m
+++\e[1mWelcome to AndroidIDE-Dev Terminal!\e[0m
 + 
 +-    motd_indent="                   "
 ++\e[1mHere's what you need to know:\e[0m
@@ -117,7 +117,7 @@ index 0000000..8b2e358
 + 
 +-    motd_indent=""
 +-fi
-++\e[1mReport issues at\e[0m \e[4mhttps://github.com/appdevforall/CodeOnTheGo/issues\e[0m
+++\e[1mReport issues at\e[0m \e[4mhttps://github.com/Wadamzmail/AndroidIDE/issues\e[0m
 + 
 +-motd+="
 +-${motd_indent}\e[1mWorking with packages:\e[0m
