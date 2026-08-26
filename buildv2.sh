@@ -241,6 +241,22 @@ done
 
 shift $((OPTIND - 1))
 
+# Parse comma-separated package list
+declare -a EXTRA_PACKAGES=()
+
+for arg in "$@"; do
+  IFS=',' read -ra PACKAGES <<< "$arg"
+
+  for package in "${PACKAGES[@]}"; do
+    package="${package#"${package%%[![:space:]]*}"}"
+    package="${package%"${package##*[![:space:]]}"}"
+
+    if [[ -n "$package" ]]; then
+      EXTRA_PACKAGES+=("$package")
+    fi
+  done
+done
+
 # Validate architecture
 if [[ "$COTG_ALL_ARCHS" != *" $COTG_ARCH "* ]]; then
   scribe_error_exit "Unsupported arch: '$COTG_ARCH'"
