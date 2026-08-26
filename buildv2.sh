@@ -45,7 +45,7 @@ declare -a PATCHES=(
   # Fix dependencies in binutils-libs
   "binutils-libs-fix-dependencies.patch"
 
-  # subversion fails to compile, complaining that the `apr.h` and other
+  # subversion fails to compile, complaining that the apr.h and other
   # headers could not be found. These headers are located in
   # $PREFIX/include/apr-1
   "subversion-missing-apr-includes.patch"
@@ -85,10 +85,12 @@ declare -a PATCHES=(
 
   # Use our keys to install dependencies
   "use-our-keys-to-install-deps.patch"
-
 )
 
+# ---------------------------------------------------------
 # Script configuration
+# ---------------------------------------------------------
+
 COTG_ARCH=""
 COTG_NO_BUILD="false"
 COTG_INSTALL_DEPS="false"
@@ -99,34 +101,30 @@ usage() {
   echo "Usage: $0 -a ARCH [options] package..."
   echo ""
   echo "Options:"
-  echo "  -a        The target architecture. Must be one of [${COTG_ALL_ARCHS}]."
+  echo "  -a        Target architecture. Must be one of [${COTG_ALL_ARCHS}]."
   echo "  -n        Set up the build, but do not execute."
-  echo "  -p        The package name of the application. Defaults to '${COTG_PACKAGE_NAME}'."
-  echo "  -r        The repository where the built packages will be published."
-  echo "            Defaults to '${COTG_REPO}'."
-  echo "  -s        The GPG key used for signing packages. Defaults to '${COTG_GPG_KEY}'."
-  echo "  -I        Prefer downloading packages from remote repository if the versions match."
+  echo "  -p        Application package name."
+  echo "  -r        Package repository URL."
+  echo "  -s        GPG key used for signing packages."
+  echo "  -I        Prefer downloading packages from remote repository if versions match."
   echo "  -h        Show this help message and exit."
   echo ""
-  echo "Packages can be specified as comma-separated values:"
+  echo "Packages may be comma-separated:"
   echo ""
-  echo "  $0 -a aarch64 openjdk25,unzip,libcurl"
+  echo "  $0 -a aarch64 openjdk-25,unzip,libcurl"
   echo ""
-  echo "Spaces after commas are also supported:"
+  echo "Spaces after commas are supported:"
   echo ""
-  echo "  $0 -a aarch64 'openjdk25, unzip, libcurl'"
+  echo "  $0 -a aarch64 'openjdk-25, unzip, libcurl'"
   echo ""
 }
 
-sed_escape() {
-  printf '%s\n' "$1" |
-    sed \
-      -e 's/[.[\*^$/]/\\&/g' \
-      -e 's/\\/\\\\/g' \
-      -e 's/#/\\#/g'
-}
+# ---------------------------------------------------------
+# Setup termux-packages
+# ---------------------------------------------------------
 
 setup_termux_packages() {
+
   pushd "$TERMUX_PACKAGES_DIR" ||
     scribe_error_exit "Unable to pushd into termux-packages"
 
@@ -143,6 +141,7 @@ setup_termux_packages() {
 
   # Remove existing keyrings
   echo "Removing existing GPG keys..."
+
   rm -rvf packages/termux-keyring/*.gpg
 
   # Add our own keyring
@@ -165,20 +164,23 @@ setup_termux_packages() {
   sed \
     "s|@TERMUX_PACKAGE_NAME@|$COTG_PACKAGE_NAME|g" \
     "${termux_tools_update_package_name_patch}.in" \
-    > "${termux_tools_update_package_name_patch}"
+    > "$termux_tools_update_package_name_patch"
 
   # Apply patches
   for patch in "${PATCHES[@]}"; do
+
     scribe_info "Applying patch: ${patch}"
 
-    if patch -p1 --no-backup-if-mismatch < "$script_dir/patches/$patch" ||
+    if patch -p1 --no-backup-if-mismatch \
+      < "$script_dir/patches/$patch" ||
       scribe_error_exit "Failed to apply '$patch'"
     then
       scribe_ok "Applied '$patch'"
     fi
+
   done
 
-  # Update the packages repository
+  # Update package repository
   grep -rnI . \
     -e "https://packages-cf.termux.dev/apt/termux-main" \
     -l |
@@ -192,13 +194,21 @@ setup_termux_packages() {
     scribe_error_exit "Unable to popd from termux-packages"
 }
 
+# ---------------------------------------------------------
+# No arguments
+# ---------------------------------------------------------
+
 if [[ $# -eq 0 ]]; then
   usage
   exit 1
 fi
 
+# ---------------------------------------------------------
 # Argument parsing
+# ---------------------------------------------------------
+
 while getopts "a:np:r:s:Ih" opt; do
+
   case "$opt" in
 
     a)
@@ -231,68 +241,29 @@ while getopts "a:np:r:s:Ih" opt; do
       ;;
 
     *)
-      echo "Invalid option" >&2
+      echo "Invalid option." >&2
       usage
       exit 1
       ;;
 
   esac
+
 done
 
 shift $((OPTIND - 1))
 
-# Parse comma-separated package list
-declare -a EXTRA_PACKAGES=()
-
-for arg in "$@"; do
-  IFS=',' read -ra PACKAGES <<< "$arg"
-
-  for package in "${PACKAGES[@]}"; do
-    package="${package#"${package%%[![:space:]]*}"}"
-    package="${package%"${package##*[![:space:]]}"}"
-
-    if [[ -n "$package" ]]; then
-      EXTRA_PACKAGES+=("$package")
-    fi
-  done
-done
-
-# Validate architecture
-if [[ "$COTG_ALL_ARCHS" != *" $COTG_ARCH "* ]]; then
-  scribe_error_exit "Unsupported arch: '$COTG_ARCH'"
-fi
-
-# Validate package name
-if [[ -z "${COTG_PACKAGE_NAME}" ]]; then
-  scribe_error_exit "A package name must be specified."
-fi
-
-# Validate repository
-if [[ -z "${COTG_REPO}" ]]; then
-  scribe_error_exit "A package repository URL must be specified."
-fi
-
-# Validate GPG key
-if ! [[ -f "${COTG_GPG_KEY}" ]]; then
-  scribe_error_exit "${COTG_GPG_KEY} does not exist or is not a file."
-fi
-
 # ---------------------------------------------------------
-# Parse selected packages
+# Parse ONLY explicitly requested packages
 #
 # Example:
 #
-#   openjdk25,unzip,libcurl
+#   openjdk-25,unzip,libcurl
 #
 # becomes:
 #
-#   openjdk25
+#   openjdk-25
 #   unzip
 #   libcurl
-#
-# Multiple arguments are also supported:
-#
-#   openjdk25,unzip libcurl,wget
 # ---------------------------------------------------------
 
 declare -a EXTRA_PACKAGES=()
@@ -317,7 +288,43 @@ for arg in "$@"; do
 
 done
 
-# No packages means failure.
+# ---------------------------------------------------------
+# Validate architecture
+# ---------------------------------------------------------
+
+if [[ "$COTG_ALL_ARCHS" != *" $COTG_ARCH "* ]]; then
+  scribe_error_exit "Unsupported arch: '$COTG_ARCH'"
+fi
+
+# ---------------------------------------------------------
+# Validate package name
+# ---------------------------------------------------------
+
+if [[ -z "${COTG_PACKAGE_NAME}" ]]; then
+  scribe_error_exit "A package name must be specified."
+fi
+
+# ---------------------------------------------------------
+# Validate repository
+# ---------------------------------------------------------
+
+if [[ -z "${COTG_REPO}" ]]; then
+  scribe_error_exit "A package repository URL must be specified."
+fi
+
+# ---------------------------------------------------------
+# Validate GPG key
+# ---------------------------------------------------------
+
+if ! [[ -f "${COTG_GPG_KEY}" ]]; then
+  scribe_error_exit \
+    "${COTG_GPG_KEY} does not exist or is not a file."
+fi
+
+# ---------------------------------------------------------
+# Validate selected packages
+# ---------------------------------------------------------
+
 if [[ ${#EXTRA_PACKAGES[@]} -eq 0 ]]; then
   scribe_error_exit "No packages specified."
 fi
@@ -332,13 +339,19 @@ declare -a UNIQUE_PACKAGES=()
 for package in "${EXTRA_PACKAGES[@]}"; do
 
   if [[ -z "${SEEN_PACKAGES[$package]+x}" ]]; then
+
     UNIQUE_PACKAGES+=("$package")
     SEEN_PACKAGES["$package"]=1
+
   fi
 
 done
 
 EXTRA_PACKAGES=("${UNIQUE_PACKAGES[@]}")
+
+# ---------------------------------------------------------
+# Display selected packages
+# ---------------------------------------------------------
 
 echo
 echo "========================================"
@@ -354,9 +367,9 @@ echo
 # Output directory
 # ---------------------------------------------------------
 
-OUTPUT_DIR="${COTG_OUTPUT_DIR}/$COTG_ARCH"
+OUTPUT_DIR="${COTG_OUTPUT_DIR}/${COTG_ARCH}"
 
-mkdir -p "${OUTPUT_DIR}"
+mkdir -p "$OUTPUT_DIR"
 
 # ---------------------------------------------------------
 # Check required commands
@@ -376,16 +389,18 @@ if ! [[ -f "$TERMUX_PACKAGES_DIR/.scribe-patched" ]]; then
 fi
 
 # ---------------------------------------------------------
-# Symlink termux-packages/output to our output directory
+# Symlink termux-packages/output
 # ---------------------------------------------------------
 
 if ! [[ -L "$TERMUX_PACKAGES_DIR/output" ]]; then
   rm -rf "$TERMUX_PACKAGES_DIR/output"
 fi
 
-rm -v "$TERMUX_PACKAGES_DIR/output" || true
+rm -vf "$TERMUX_PACKAGES_DIR/output" || true
 
-ln -sf "$OUTPUT_DIR" "$TERMUX_PACKAGES_DIR/output"
+ln -sf \
+  "$OUTPUT_DIR" \
+  "$TERMUX_PACKAGES_DIR/output"
 
 # ---------------------------------------------------------
 # No-build mode
@@ -397,7 +412,14 @@ if [[ "$COTG_NO_BUILD" == "true" ]]; then
 fi
 
 # ---------------------------------------------------------
-# Build ONLY the selected packages
+# Build ONLY selected packages
+#
+# IMPORTANT:
+#
+# COTG_PACKAGES from packages.sh is intentionally NOT used.
+#
+# The only packages passed to build-package.sh are the ones
+# explicitly provided through the command line.
 # ---------------------------------------------------------
 
 pushd "$TERMUX_PACKAGES_DIR" ||
@@ -417,9 +439,7 @@ echo
 echo "========================================"
 echo
 
-declare -a BUILD_ARGS
-
-BUILD_ARGS=(
+declare -a BUILD_ARGS=(
   "-a"
   "${COTG_ARCH}"
 
@@ -427,12 +447,18 @@ BUILD_ARGS=(
   "${OUTPUT_DIR}"
 )
 
-# Prefer remote dependencies when requested
-if [[ "${COTG_INSTALL_DEPS}" == "true" ]]; then
+# Prefer remote repository packages when requested
+if [[ "$COTG_INSTALL_DEPS" == "true" ]]; then
   BUILD_ARGS+=("-I")
 fi
 
-# Append ONLY explicitly selected packages
+# ---------------------------------------------------------
+# CRITICAL:
+#
+# Only explicitly requested packages are added here.
+# No COTG_PACKAGES.
+# ---------------------------------------------------------
+
 BUILD_ARGS+=("${EXTRA_PACKAGES[@]}")
 
 echo "Running:"
@@ -440,6 +466,10 @@ printf '  %q' ./build-package.sh
 printf ' %q' "${BUILD_ARGS[@]}"
 echo
 echo
+
+# ---------------------------------------------------------
+# Execute build
+# ---------------------------------------------------------
 
 if ! {
   time ./build-package.sh "${BUILD_ARGS[@]}" |&
@@ -454,7 +484,7 @@ popd ||
   scribe_error_exit "Unable to popd from termux-packages"
 
 # ---------------------------------------------------------
-# Show generated packages
+# Build summary
 # ---------------------------------------------------------
 
 echo
@@ -463,6 +493,10 @@ echo "Build completed successfully"
 echo "========================================"
 echo
 
+echo "Requested packages:"
+printf '  - %s\n' "${EXTRA_PACKAGES[@]}"
+
+echo
 echo "Generated .deb packages:"
 
 find "$OUTPUT_DIR" \
@@ -472,4 +506,13 @@ find "$OUTPUT_DIR" \
   -printf '  %f\n' |
   sort
 
-echo 
+echo
+echo "Output directory:"
+echo "  $OUTPUT_DIR"
+
+echo
+echo "Build log:"
+echo "  $OUTPUT_DIR/build.log"
+
+echo
+echo "========================================"
