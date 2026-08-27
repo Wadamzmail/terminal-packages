@@ -429,10 +429,112 @@ jobs:
             ' _ {} \;
 
       - name: Deploy to pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: pages
-          publish_dir: output/repo
-          keep_files: false
-          force_orphan: false
+        run: |
+          set -e
+
+          echo "========================================"
+          echo "Checkout pages branch"
+          echo "========================================"
+
+          rm -rf output/pages
+
+          git clone \
+            --branch pages \
+            --single-branch \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            output/pages
+
+          cd output/pages
+
+          echo
+          echo "========================================"
+          echo "Setup Git LFS"
+          echo "========================================"
+
+          git lfs install
+
+          echo
+          echo "========================================"
+          echo "Pages LFS configuration"
+          echo "========================================"
+
+          if [ ! -f .gitattributes ]; then
+            echo "ERROR: .gitattributes not found in pages branch."
+            exit 1
+          fi
+
+          cat .gitattributes
+
+          echo
+          echo "========================================"
+          echo "Replace repository contents"
+          echo "========================================"
+
+          # Remove everything from pages except:
+          # - .git
+          # - .gitattributes
+          find . \
+            -mindepth 1 \
+            -maxdepth 1 \
+            ! -name ".git" \
+            ! -name ".gitattributes" \
+            -exec rm -rf {} +
+
+          # Copy the newly generated APT repository.
+          cp -a ../repo/. .
+
+          echo
+          echo "========================================"
+          echo "Git LFS tracked files"
+          echo "========================================"
+
+          git lfs ls-files
+
+          echo
+          echo "========================================"
+          echo "Git status before commit"
+          echo "========================================"
+
+          git status --short
+
+          echo
+          echo "========================================"
+          echo "Stage files"
+          echo "========================================"
+
+          git add .
+
+          echo
+          echo "========================================"
+          echo "Git LFS files after staging"
+          echo "========================================"
+
+          git lfs ls-files
+
+          echo
+          echo "========================================"
+          echo "Create commit"
+          echo "========================================"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+          else
+            git commit -m "Update package repository"
+          fi
+
+          echo
+          echo "========================================"
+          echo "Push pages"
+          echo "========================================"
+
+          git push --force origin pages
+
+          echo
+          echo "========================================"
+          echo "Deploy completed"
+          echo "========================================"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
